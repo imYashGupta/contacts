@@ -15,11 +15,12 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('name');
-            $table->string('email');
-            $table->string('phone');
+            $table->json('emails');
+            $table->json('phone_numbers');
             $table->enum('gender', ['MALE', 'FEMALE']);
             $table->string('profile_photo')->nullable();
             $table->string('file')->nullable();
+            $table->foreignId('merged_into')->nullable()->constrained('contacts')->nullOnDelete();
             $table->softDeletes();
             $table->timestamps();
         });

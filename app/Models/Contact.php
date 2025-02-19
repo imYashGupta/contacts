@@ -14,11 +14,17 @@ class Contact extends Model
 
     protected $fillable = [
         'name',
-        'email',
-        'phone',
+        'emails',
+        'phone_numbers',
         'gender',
         'profile_photo',
         'file',
+        'merged_into',
+    ];
+
+    protected $casts = [
+        'emails' => 'array',
+        'phone_numbers' => 'array',
     ];
 
     protected function getProfilePhotoAttribute($profile_photo): string
