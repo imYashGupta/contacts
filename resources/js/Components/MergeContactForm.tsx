@@ -87,7 +87,7 @@ const MergeContactForm = ({ primaryContact: primaryContactState, secondaryContac
                             selected={secondaryContact}
                         />
                     </div>
-                    <div className='mt-4'>
+                    {conflictingFields.length > 0 && <div className='mt-4'>
                         <h2>Conflicts:</h2>
                         <p className="text-sm leading-5 text-gray-500 mb-4">Please resolve the conflicting fields below:</p>
                         {conflictingFields.map((fields, index) => (
@@ -116,7 +116,7 @@ const MergeContactForm = ({ primaryContact: primaryContactState, secondaryContac
                                 </fieldset>
                             </div>
                         ))}
-                    </div>
+                    </div>}
 
                 </div>
                 <div className='p-6 border-t border-gray-200 mt-4'>

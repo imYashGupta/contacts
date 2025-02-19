@@ -77,13 +77,14 @@ class ContactController extends Controller
             return $contact;
         });
 
-        return redirect()->back();
+        return redirect()->back()->with('flash', [
+            'message' => 'Contact Created Successfully.',
+            'type' => 'success',
+        ]);
     }
 
     public function update(Request $request, Contact $contact)
     {
-
-        $request->dump();
         DB::transaction(function () use ($request, $contact) {
             $contact->name = $request->name;
             $contact->emails = $request->emails;
@@ -124,7 +125,10 @@ class ContactController extends Controller
             });
         });
 
-        return redirect()->back();
+        return redirect()->back()->with('flash', [
+            'message' => 'Contact Updated Successfully.',
+            'type' => 'success',
+        ]);
     }
 
     public function merge(Request $request)
@@ -192,11 +196,16 @@ class ContactController extends Controller
             $primaryContact->save();
 
             DB::commit();
-            return redirect()->back()->with('success', 'Contacts merged successfully!');
+            return redirect()->back()->with('flash', [
+                'message' => 'Contact Merged Successfully.',
+                'type' => 'success',
+            ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            dump($e->getMessage());
-            return redirect()->back()->with('error', 'Error merging contacts: ' . $e->getMessage());
+            return redirect()->back()->with('flash', [
+                'message' => 'An error occurred while merging contacts.',
+                'type' => 'error',
+            ]);
         }
     }
 }
