@@ -23,6 +23,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::resource('contacts', ContactController::class)->except('show');
+    Route::post('contacts/merge', [ContactController::class, 'merge'])->name('contacts.merge');
 });
 
 require __DIR__ . '/auth.php';

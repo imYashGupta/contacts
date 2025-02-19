@@ -19,14 +19,11 @@ class ContactController extends Controller
         ]);
 
         if ($validator->fails()) {
-            // Reset the search and redirect
             return redirect()->route('dashboard');
         }
 
-        // Start query with user's contacts
-        $contacts = $request->user()->contacts()->with(['customFields']);
+        $contacts = $request->user()->contacts()->whereNull('merged_into')->with(['customFields']);
 
-        // Search in `contacts` table
         if ($request->has('search')) {
             $searchTerm = "%{$request->search}%";
 
@@ -126,6 +123,36 @@ class ContactController extends Controller
                 }
             });
         });
+
+        return redirect()->back();
+    }
+
+    public function merge(Request $request)
+    {
+        $request->validate([
+            'primary_contact' => ['required', 'exists:contacts,id'],
+            'secondary_contact' => ['required', 'exists:contacts,id'],
+        ]);
+
+        $primaryContact = Contact::find($request->primary_contact);
+        $secondaryContact = Contact::find($request->secondary_contact);
+
+        $primaryContact->emails = array_values(array_unique(array_merge(
+            $primaryContact->emails,
+            $secondaryContact->emails
+        )));
+        $primaryContact->phone_numbers = array_values(array_unique(array_merge(
+            $primaryContact->phone_numbers,
+            $secondaryContact->phone_numbers
+        )));
+
+        $secondaryContact->customFields()->update([
+            'contact_id' => $primaryContact->id,
+        ]);
+        $primaryContact->save();
+        $secondaryContact->update([
+            'merged_into' => $primaryContact->id,
+        ]);
 
         return redirect()->back();
     }
