@@ -24,8 +24,10 @@ class UpdateContactRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255'],
-            'phone' => ['required', 'string', 'max:255'],
+            'emails' => ['required', 'array'],
+            'emails.*' => ['required', 'email', 'max:255'],
+            'phone_numbers' => ['required', 'array'],
+            'phone_numbers.*' => ['required', 'string', 'max:255'],
             'gender' => ['required', 'string', Rule::in(['MALE', 'FEMALE'])],
             #TODO: shd be mimeTypes validation 
             'profile_photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:1024'],

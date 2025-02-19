@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CreateContactRequest;
 use App\Models\Contact;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
@@ -30,7 +31,7 @@ class ContactController extends Controller
             $searchTerm = "%{$request->search}%";
 
             $contacts->whereAny(
-                ['name', 'email', 'phone'],
+                ['name', 'emails', 'phone_numbers'],
                 'LIKE',
                 $searchTerm
             )->orWhereHas('customFields', function ($query) use ($searchTerm) {
@@ -55,8 +56,8 @@ class ContactController extends Controller
         DB::transaction(function () use ($request) {
             $contact = $request->user()->contacts()->create([
                 'name' => $request->name,
-                'email' => $request->email,
-                'phone' => $request->phone,
+                'emails' => $request->emails,
+                'phone_numbers' => $request->phone_numbers,
                 'gender' => $request->gender,
                 'profile_photo' => $request->file('profile_photo')->store(
                     'profile_photos/' . $request->user()->id,
@@ -88,8 +89,8 @@ class ContactController extends Controller
         $request->dump();
         DB::transaction(function () use ($request, $contact) {
             $contact->name = $request->name;
-            $contact->email = $request->email;
-            $contact->phone = $request->phone;
+            $contact->emails = $request->emails;
+            $contact->phone_numbers = $request->phone_numbers;
             $contact->gender = $request->gender;
             if ($request->hasFile('profile_photo')) {
                 $contact->profile_photo = $request->file('profile_photo')->store(

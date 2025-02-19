@@ -25,9 +25,11 @@ class CreateContactRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255'],
-            'phone' => ['required', 'string', 'max:255'],
             'gender' => ['required', 'string', Rule::in(['MALE', 'FEMALE'])],
+            'emails' => ['required', 'array'],
+            'emails.*' => ['required', 'email', 'max:255'],
+            'phone_numbers' => ['required', 'array'],
+            'phone_numbers.*' => ['required', 'string', 'max:255'],
             #TODO: shd be mimeTypes validation 
             'profile_photo' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:1024'],
             'additional_file' => ['required', 'file', 'max:1024'],
