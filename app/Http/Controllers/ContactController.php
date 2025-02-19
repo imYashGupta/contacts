@@ -107,24 +107,24 @@ class ContactController extends Controller
             }
             $contact->save();
 
-            foreach ($request->custom_fields as $field) {
-                if (isset($field['id'])) {
-                    $contact->customFields()->updateOrCreate(
-                        ['id' => $field['id']],
-                        [
-                            'type' => $field['type'],
-                            'name' => $field['name'],
-                            'value' => $field['value'],
-                        ]
-                    );
+            $existingFieldIds = $contact->customFields()->pluck('id')->toArray();
+
+            $incomingFields = collect($request->custom_fields);
+            $incomingFieldIds = $incomingFields->pluck('id')->filter()->toArray();
+
+            // delete fields.
+            $fieldsToDelete = array_diff($existingFieldIds, $incomingFieldIds);
+            $contact->customFields()->whereIn('id', $fieldsToDelete)->delete();
+
+            // update/create fields
+            $incomingFields->each(function ($field) use ($contact) {
+                $data = Arr::only($field, ['type', 'name', 'value']);
+                if (!empty($field['id'])) {
+                    $contact->customFields()->updateOrCreate(['id' => $field['id']], $data);
                 } else {
-                    $contact->customFields()->create([
-                        'type' => $field['type'],
-                        'name' => $field['name'],
-                        'value' => $field['value'],
-                    ]);
+                    $contact->customFields()->create($data);
                 }
-            }
+            });
         });
 
         return redirect()->back();
