@@ -4,11 +4,11 @@ import TextInput from './TextInput'
 import InputError from './InputError'
 import PrimaryButton from './PrimaryButton'
 import { useForm } from '@inertiajs/react'
-import { DocumentPlusIcon, TrashIcon, DocumentCheckIcon } from '@heroicons/react/24/solid'
+import { DocumentPlusIcon, TrashIcon, DocumentCheckIcon, PlusCircleIcon } from '@heroicons/react/24/solid'
 import { Contact } from '@/types/Contact'
 
 type Props = {
-    editableContact: Contact
+    editableContact: Contact | null
     onClose: () => void
 }
 const genders = [
@@ -18,14 +18,15 @@ const genders = [
 const ContactCreateForm = ({ editableContact: contact, onClose }: Props) => {
     const form = useForm({
         name: '',
-        email: '',
-        phone: '',
         gender: '',
         profile_photo: '',
         additional_file: '',
         custom_fields: [],
+        emails: [""],
+        phone_numbers: [""],
 
     });
+    console.log(form.data)
 
     const handleAddField = (e) => {
         e.preventDefault();
@@ -68,8 +69,8 @@ const ContactCreateForm = ({ editableContact: contact, onClose }: Props) => {
                 ...data,
                 _method: 'PATCH',
                 name: contact.name,
-                email: contact.email,
-                phone: contact.phone,
+                emails: contact.emails,
+                phone_numbers: contact.phone_numbers,
                 gender: contact.gender,
                 // profile_photo: contact.profile_photo,
                 custom_fields: contact.custom_fields,
@@ -79,8 +80,8 @@ const ContactCreateForm = ({ editableContact: contact, onClose }: Props) => {
     }, [contact])
 
     return (
-        <>
-            <div className="border-b border-gray-200 bg-white px-4 py-5 sm:px-6">
+        <div className='max-h-[650px] overflow-y-auto    '>
+            <div className="border-b border-gray-200 bg-white px-4 py-5 sm:px-6 ">
                 <div className="-ml-4 -mt-4 flex flex-wrap items-center justify-between sm:flex-nowrap">
                     <div className="ml-4 mt-4">
                         <h3 className="text-lg font-medium leading-6 text-gray-900">Create New Contact</h3>
@@ -99,26 +100,6 @@ const ContactCreateForm = ({ editableContact: contact, onClose }: Props) => {
                         value={form.data.name}
                     />
                     <InputError className="mt-2" message={form.errors.name} />
-                </div>
-                <div className='col-span-6'>
-                    <InputLabel htmlFor="email" value="Email" />
-                    <TextInput
-                        id="email"
-                        className="mt-1 block w-full"
-                        onChange={(e) => form.setData('email', e.target.value)}
-                        value={form.data.email}
-                    />
-                    <InputError className="mt-2" message={form.errors.email} />
-                </div>
-                <div className='col-span-6'>
-                    <InputLabel htmlFor="phone" value="Phone" />
-                    <TextInput
-                        id="phone"
-                        className="mt-1 block w-full"
-                        onChange={(e) => form.setData('phone', e.target.value)}
-                        value={form.data.phone}
-                    />
-                    <InputError className="mt-2" message={form.errors.phone} />
                 </div>
                 <div className='col-span-6'>
                     <InputLabel htmlFor="gender" value="Gender" />
@@ -142,6 +123,72 @@ const ContactCreateForm = ({ editableContact: contact, onClose }: Props) => {
                     </div>
                     <InputError className="mt-2" message={form.errors.gender} />
                 </div>
+                <div className='col-span-12 border-t pt-4'>
+                    <h1>Email</h1>
+                    {form.data.emails.map((email, i) => <div className='flex'>
+                        <div className='w-full'>
+                            <TextInput
+                                id={"email" + i}
+                                className="mt-1 block w-full"
+                                onChange={(e) => {
+                                    let emails = [...form.data.emails]
+                                    emails[i] = e.target.value
+                                    form.setData('emails', emails)
+                                }}
+                                value={email}
+                                type='email'
+                            />
+                            <InputError className="mt-2" message={form?.errors[`emails.${i}`] || ''} />
+                        </div>
+                        {form.data.emails.length == i + 1 ? <div className='flex items-center justify-center ml-2'>
+                            <PlusCircleIcon onClick={() => {
+                                let emails = [...form.data.emails]
+                                emails.push('')
+                                form.setData('emails', emails)
+                            }} className="h-5 w-5 text-gray-400 cursor-pointer" aria-hidden="true" />
+                        </div> : <div className='flex items-center justify-center ml-2'>
+                            <TrashIcon onClick={() => {
+                                let emails = [...form.data.emails]
+                                emails.splice(i, 1)
+                                form.setData('emails', emails)
+                            }} className="h-5 w-5 text-gray-400 cursor-pointer" aria-hidden="true" />
+                        </div>}
+                    </div>)}
+                </div>
+                <div className='col-span-12 border-t pt-4'>
+                    <h1>Phone Numbers</h1>
+                    {form.data.phone_numbers.map((phone, i) => <div className='flex'>
+                        <div className='w-full'>
+                            <TextInput
+                                id={"phone" + i}
+                                className="mt-1 block w-full"
+                                onChange={(e) => {
+                                    let phone_numbers = [...form.data.phone_numbers]
+                                    phone_numbers[i] = e.target.value
+                                    form.setData('phone_numbers', phone_numbers)
+                                }}
+                                value={phone}
+                                type='tel'
+                            />
+                            <InputError className="mt-2" message={form?.errors[`phone_numbers.${i}`] || ''} />
+                        </div>
+                        {form.data.phone_numbers.length == i + 1 ? <div className='flex items-center justify-center ml-2'>
+                            <PlusCircleIcon onClick={() => {
+                                let phone_numbers = [...form.data.phone_numbers]
+                                phone_numbers.push('')
+                                form.setData('phone_numbers', phone_numbers)
+                            }} className="h-5 w-5 text-gray-400 cursor-pointer" aria-hidden="true" />
+                        </div> : <div className='flex items-center justify-center ml-2'>
+                            <TrashIcon onClick={() => {
+                                let phone_numbers = [...form.data.phone_numbers]
+                                phone_numbers.splice(i, 1)
+                                form.setData('phone_numbers', phone_numbers)
+                            }} className="h-5 w-5 text-gray-400 cursor-pointer" aria-hidden="true" />
+                        </div>}
+                    </div>)}
+                </div>
+
+
                 <div className='col-span-12'>
                     <InputLabel htmlFor="address" value="Profile Photo" />
                     <div className="mt-2">
@@ -160,6 +207,8 @@ const ContactCreateForm = ({ editableContact: contact, onClose }: Props) => {
                             </button>
                             <input id="profile-photo-upload" type="file" className='hidden' onChange={(e) => form.setData('profile_photo', e.target.files[0])} />
                         </div>
+                        <InputError className="mt-2" message={form.errors.profile_photo} />
+
                     </div>
                 </div>
                 <div className='col-span-12'>
@@ -192,6 +241,8 @@ const ContactCreateForm = ({ editableContact: contact, onClose }: Props) => {
                             <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
                         </div>}
                     </div>
+                    <InputError className="mt-2" message={form.errors.additional_file} />
+
                 </div>
                 {form.data.custom_fields.map((field, index) => <>
                     <div className='col-span-6'>
@@ -214,8 +265,7 @@ const ContactCreateForm = ({ editableContact: contact, onClose }: Props) => {
                             </div>
                             <input
                                 type={"text"}
-                                name="phone-number"
-                                id="phone-number"
+                                id={"field" + index}
                                 className="block w-full rounded-md border-gray-300 pl-24 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                 placeholder="Name"
                                 onChange={(e) => handleCustomFieldChange(index, 'name', e.target.value)}
@@ -225,11 +275,10 @@ const ContactCreateForm = ({ editableContact: contact, onClose }: Props) => {
                     </div>
                     <div className='col-span-5'>
                         <TextInput
-                            id="phone"
+                            id={"input" + index}
                             className="block w-full py-1.5 mt-0.5"
                             required
                             isFocused
-                            autoComplete="phone"
                             type={field.type}
                             onChange={(e) => handleCustomFieldChange(index, 'value', e.target.value)}
                             value={field.value}
@@ -247,7 +296,7 @@ const ContactCreateForm = ({ editableContact: contact, onClose }: Props) => {
                 <PrimaryButton disabled={form.processing} className='!bg-indigo-600' onClick={handleSubmit}>{contact ? 'Update' : 'Create'}</PrimaryButton>
             </div>
 
-        </>
+        </div>
     )
 }
 
