@@ -14,6 +14,7 @@ export default function Dashboard({ contacts }: { contacts: Contact[] }) {
     const [showModal, setShowModal] = useState(false);
     const [showMergeModal, setShowMergeModal] = useState(false);
     const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+    const [preferred_fields, setPreferredFields] = useState([]);
 
     const [editableContact, setEditableContact] = useState(null);
 
@@ -26,9 +27,11 @@ export default function Dashboard({ contacts }: { contacts: Contact[] }) {
     const handleMerge = () => {
         setShowConfirmationModal(false);
         setShowMergeModal(false);
+
         router.post(route('contacts.merge'), {
             primary_contact: primaryContact.id,
-            secondary_contact: secondaryContact.id
+            secondary_contact: secondaryContact.id,
+            preferred_fields: preferred_fields
         });
     }
 
@@ -67,7 +70,10 @@ export default function Dashboard({ contacts }: { contacts: Contact[] }) {
                     </Modal>
                     <Modal show={showMergeModal} onClose={setShowMergeModal} maxWidth="2xl" >
                         <MergeContactForm
-                            onMerge={() => setShowConfirmationModal(true)}
+                            onMerge={(preferred_fields) => {
+                                setPreferredFields(preferred_fields);
+                                setShowConfirmationModal(true);
+                            }}
                             primaryContact={[primaryContact, setPrimaryContact]}
                             secondaryContact={[secondaryContact, setSecondaryContact]}
                         />

@@ -129,31 +129,74 @@ class ContactController extends Controller
 
     public function merge(Request $request)
     {
+        // Validate request
         $request->validate([
             'primary_contact' => ['required', 'exists:contacts,id'],
             'secondary_contact' => ['required', 'exists:contacts,id'],
+            'preferred_fields' => ['sometimes', 'array'],
         ]);
 
-        $primaryContact = Contact::find($request->primary_contact);
-        $secondaryContact = Contact::find($request->secondary_contact);
+        DB::beginTransaction();
 
-        $primaryContact->emails = array_values(array_unique(array_merge(
-            $primaryContact->emails,
-            $secondaryContact->emails
-        )));
-        $primaryContact->phone_numbers = array_values(array_unique(array_merge(
-            $primaryContact->phone_numbers,
-            $secondaryContact->phone_numbers
-        )));
+        try {
+            $primaryContact = Contact::findOrFail($request->primary_contact);
+            $secondaryContact = Contact::findOrFail($request->secondary_contact);
 
-        $secondaryContact->customFields()->update([
-            'contact_id' => $primaryContact->id,
-        ]);
-        $primaryContact->save();
-        $secondaryContact->update([
-            'merged_into' => $primaryContact->id,
-        ]);
+            $primaryContact->emails = array_values(array_unique(array_merge(
+                $primaryContact->emails,
+                $secondaryContact->emails
+            )));
+            $primaryContact->phone_numbers = array_values(array_unique(array_merge(
+                $primaryContact->phone_numbers,
+                $secondaryContact->phone_numbers
+            )));
 
-        return redirect()->back();
+            $secondaryContact->customFields()->update([
+                'contact_id' => $primaryContact->id,
+            ]);
+
+            $fields = collect([...$primaryContact->customFields])->groupBy(['type', 'name']);
+
+            if (count($request->preferred_fields) > 0) {
+                foreach ($request->preferred_fields as $preferredField) {
+                    if (!isset($preferredField['type']) || !isset($preferredField['name'])) {
+                        continue;
+                    }
+
+                    $fieldName = $preferredField['name'];
+                    $fieldType = $preferredField['type'];
+                    $selectedValue = $preferredField['value'];
+                    $selectedId = $preferredField['id'];
+
+                    $conflictingFields = $fields[$fieldType][$fieldName] ?? collect();
+
+                    if ($selectedId == 1234) {
+                        // Keep Both option
+                        continue;
+                    } else {
+                        // Remove non-preferred
+                        foreach ($conflictingFields as $field) {
+                            if ($field->id != $selectedId) {
+                                $field->delete(); // Remove non-selected fields
+                            } else {
+                                // Update the selected field value (if needed)
+                                $field->update(['value' => $selectedValue]);
+                            }
+                        }
+                    }
+                }
+            }
+
+            $secondaryContact->update(['merged_into' => $primaryContact->id]);
+
+            $primaryContact->save();
+
+            DB::commit();
+            return redirect()->back()->with('success', 'Contacts merged successfully!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            dump($e->getMessage());
+            return redirect()->back()->with('error', 'Error merging contacts: ' . $e->getMessage());
+        }
     }
 }
