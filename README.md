@@ -37,8 +37,6 @@ php artisan key:generate
 php artisan migrate
 ```
 
-_(Include `--seed` if you have seeders to populate initial data.)_
-
 ### 5️⃣ Start the Development Server
 
 ```sh
