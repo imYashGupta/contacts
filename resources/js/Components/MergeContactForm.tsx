@@ -30,7 +30,6 @@ const MergeContactForm = ({ primaryContact: primaryContactState, secondaryContac
         dispatchMerge(selectedFields);
     };
 
-
     useEffect(() => {
         if (!primaryContact || !secondaryContact) return;
 
@@ -75,7 +74,13 @@ const MergeContactForm = ({ primaryContact: primaryContactState, secondaryContac
                         <ContactSelectBox
                             label='Select Contact (Primary)'
                             contacts={contacts}
-                            handleSelected={(contact: Contact) => setPrimaryContact(contact)}
+                            handleSelected={(contact: Contact) => {
+                                setPrimaryContact(contact)
+                                setConflictingFields([]);
+
+                            }
+
+                            }
                             selected={primaryContact}
                         />
                     </div>
@@ -83,7 +88,10 @@ const MergeContactForm = ({ primaryContact: primaryContactState, secondaryContac
                         <ContactSelectBox
                             label='Select Contact to Merge with (Secondary)'
                             contacts={contacts}
-                            handleSelected={(contact: Contact) => setSecondaryContact(contact)}
+                            handleSelected={(contact: Contact) => {
+                                setSecondaryContact(contact);
+                                setConflictingFields([]);
+                            }}
                             selected={secondaryContact}
                         />
                     </div>
